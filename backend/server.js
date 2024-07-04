@@ -7,7 +7,6 @@ const { getDefaultHighWaterMark } = require("stream");
 const app = express();
 const PORT = 8000;
 
-// Middleware
 app.use(cors());
 
 const VIDEO_FOLDER = path.join("D:\\Videos");
@@ -29,6 +28,13 @@ getFolderStructure = dir => {
             return {
                 name: entry.name,
                 type: "file",
+                path: path.relative(VIDEO_FOLDER, fullPath),
+            };
+        }
+        else if(entry.isFile() && entry.name.match(/\.(srt|vtt|ass)$/i)){
+            return {
+                name: entry.name,
+                type: "subtitle",
                 path: path.relative(VIDEO_FOLDER, fullPath),
             };
         }
@@ -79,6 +85,17 @@ app.get("/videos/:filename(*)", (req, res) => {
           res.writeHead(200, headers);
           fs.createReadStream(videoPath).pipe(res);
     }
+});
+
+app.get("/subtitles/:filename(*)", (req, res) => {
+    const decodedPath = decodeURIComponent(req.params.filename);
+    const subtitlePath = path.join(VIDEO_FOLDER, decodedPath);
+    
+    if (!fs.existsSync(subtitlePath)) {
+        return res.status(404).send("Subtitle not found!");
+    }
+
+    res.sendFile(subtitlePath);
 });
 
 app.listen(PORT, "0.0.0.0", () => {
