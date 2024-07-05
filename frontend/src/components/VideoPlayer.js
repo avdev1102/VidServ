@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import ReactPlayer from "react-player";
+import { useDarkModeContext } from "../contexts/DarkModeProvider";
 
 function VideoPlayer() {
     const { videoPath } = useParams();
@@ -12,6 +13,7 @@ function VideoPlayer() {
     const [captionUrl, setCaptionUrl] = useState("");
     const [captionSize, setCaptionSize] = useState("medium");
     const [showCaptions, setShowCaptions] = useState(true);
+    const { isDarkMode, toggleDarkMode } = useDarkModeContext();
 
     useEffect(() => {
         if (playerRef.current && captionUrl) {
@@ -60,13 +62,37 @@ function VideoPlayer() {
     };
 
     return (
-        <div className="p-6 max-w-4xl mx-auto">
-            <Link to="/" className="text-blue-500 hover:underline mb-4 inline-block">
-                ← Back to browser
-            </Link>
+        <div
+            className={`p-6 max-w-4xl mx-auto ${
+                isDarkMode ? "bg-black text-white" : "bg-white text-black"
+            }`}
+        >
+            <div className="flex justify-between items-center mb-4">
+                <Link
+                    to="/"
+                    className={`${
+                        isDarkMode ? "text-blue-300" : "text-blue-500"
+                    } hover:underline`}
+                >
+                    ← Back to browser
+                </Link>
+                <button
+                    onClick={toggleDarkMode}
+                    className={`px-4 py-2 rounded ${
+                        isDarkMode ? "bg-gray-700 text-white" : "bg-gray-300 text-black"
+                    }`}
+                >
+                    {isDarkMode ? "🌞 Light Mode" : "🌙 Dark Mode"}
+                </button>
+            </div>
+
             <h1 className="text-2xl font-bold mb-4">Now Playing</h1>
 
-            <div className="relative bg-black rounded-lg overflow-hidden shadow-lg">
+            <div
+                className={`relative rounded-lg overflow-hidden shadow-lg ${
+                    isDarkMode ? "bg-gray-900" : "bg-black"
+                }`}
+            >
                 <ReactPlayer
                     ref={playerRef}
                     url={videoUrl}
@@ -77,46 +103,41 @@ function VideoPlayer() {
                 />
             </div>
 
-            <div className="mt-4 p-4 bg-gray-100 rounded-lg shadow-md">
-                <label className="block mb-2 text-gray-700 font-semibold">
+            <div
+                className={`mt-4 p-4 rounded-lg shadow-md ${
+                    isDarkMode ? "bg-gray-800 text-white" : "bg-gray-100 text-black"
+                }`}
+            >
+                <label className="block mb-2 font-semibold">
                     Upload Captions (.srt/.vtt):
                 </label>
                 <input
                     type="file"
                     accept=".srt,.vtt"
                     onChange={handleCaptionUpload}
-                    className="block w-full p-2 border rounded-md"
+                    className={`block w-full p-2 border rounded-md ${
+                        isDarkMode ? "bg-gray-700 text-white" : "bg-white text-black"
+                    }`}
                 />
 
                 {captionUrl && (
                     <div className="mt-4">
                         <button
                             onClick={() => setShowCaptions(!showCaptions)}
-                            className="px-4 py-2 bg-blue-500 text-white rounded-md mr-2 hover:bg-blue-600"
+                            className={`px-4 py-2 rounded-md mr-2 hover:opacity-80 ${
+                                isDarkMode ? "bg-blue-600 text-white" : "bg-blue-500 text-white"
+                            }`}
                         >
                             {showCaptions ? "Hide Captions" : "Show Captions"}
                         </button>
                         <button
                             onClick={() => setCaptionUrl("")}
-                            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                            className={`px-4 py-2 rounded-md hover:opacity-80 ${
+                                isDarkMode ? "bg-red-600 text-white" : "bg-red-500 text-white"
+                            }`}
                         >
                             Remove Captions
                         </button>
-
-                        <div className="mt-4">
-                            <label className="block mb-2 text-gray-700 font-semibold">
-                                Caption Size:
-                            </label>
-                            <select
-                                value={captionSize}
-                                onChange={(e) => setCaptionSize(e.target.value)}
-                                className="p-2 border rounded-md"
-                            >
-                                <option value="small">Small</option>
-                                <option value="medium">Medium</option>
-                                <option value="large">Large</option>
-                            </select>
-                        </div>
                     </div>
                 )}
             </div>
@@ -124,7 +145,9 @@ function VideoPlayer() {
             <style>
                 {`
                 ::cue {
-                    font-size: ${captionSize === "small" ? "12px" : captionSize === "large" ? "24px" : "18px"};
+                    font-size: ${
+                        captionSize === "small" ? "12px" : captionSize === "large" ? "24px" : "18px"
+                    };
                     background: rgba(0, 0, 0, 0.6);
                     color: white;
                     padding: 4px;
